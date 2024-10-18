@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>زانياریێن شوفیران</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400&display=swap');
+
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f8f8f8;
+        }
+        #search-input {
+          font-family: 'IBM Plex Sans Arabic', sans-serif;
+          text-align: center;
+            padding: 10px;
+            margin: 20px;
+            width: 300px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        #print-button, #external-link-button, #reload-button{
+          font-family: 'IBM Plex Sans Arabic', sans-serif;
+            padding: 10px 20px;
+            margin: 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        #print-button, #external-link-button, #reload-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+  
+    <h1>زانياریێن شوفیری</h1>
+    
+    <button id="reload-button" onclick="reloadPage()">نيكرن</button>
+
+    <!-- حقل إدخال البحث -->
+    <input type="text" id="search-input" placeholder="لێگه‌ریان" onkeyup="searchTable()">
+
+    <!-- زر الطباعة -->
+    <button id="print-button" onclick="printTable()">چاپكرن</button>
+    
+     <a href="https://script.google.com/macros/s/AKfycbzupuiVv7wqc_y5vjP-_IUBBCwMAzzRpIim_IeXfyj-/dev" target="_self" id="external-link-button">توماركرنا پسولان </a>
+
+    <table id="data-table">
+        <thead>
+            <tr>
+                <!-- تعديل عناوين الأعمدة حسب جدولك -->
+                <th>ناڤێ شوفیری</th>
+                    <th>ژمارا ترومبێلێ</th>
+                    <th>جورێ ترومبێلێ</th>
+                    <th>جور</th>
+                    <th>ژمارا پسولێ</th>
+                    <th>ژمارا ده‌فته‌رێ</th>
+                    <th>مێژوا توماركنێ</th>
+                    <th>وێنه</th>
+                    <th>ناڤێ توماركه‌ری</thth>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- سيتم تعبئة البيانات هنا -->
+        </tbody>
+    </table>
+
+    <script>
+        // رابط Google Sheets
+        const sheetId = '1ZwlVhlcdAYF7k6dnFdjid4rXueyWve3PEfcjkwyz6as';
+        const base = `https://docs.google.com/spreadsheets/d/1KqGKziGCAz_1ENp3XRpNPZCXXifEHDPs-oSGo1N7uBI/gviz/tq?tqx=out:json`;
+
+        fetch(base)
+            .then(response => response.text())
+            .then(data => {
+                const jsonData = JSON.parse(data.substr(47).slice(0, -2)); // إزالة البيانات الزائدة لتحويلها إلى JSON
+                const rows = jsonData.table.rows;
+
+                const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
+
+                rows.forEach(row => {
+                    const tr = document.createElement('tr');
+                    
+                    row.c.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell?.v || ''; // التعامل مع الخلايا الفارغة
+                        tr.appendChild(td);
+                    });
+
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('ئارشه‌ك یا هه‌ی', error);
+            });
+
+        // وظيفة البحث في الجدول
+        function searchTable() {
+            const input = document.getElementById('search-input');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('data-table');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) { // ابدأ من الصف الثاني (تجاهل العناوين)
+                const row = rows[i];
+                let textContent = '';
+                for (let j = 0; j < row.cells.length; j++) {
+                    textContent += row.cells[j].textContent.toLowerCase();
+                }
+                if (textContent.includes(filter)) {
+                    row.style.display = ''; // عرض الصف
+                } else {
+                    row.style.display = 'none'; // إخفاء الصف
+                }
+            }
+        }
+
+        // وظيفة طباعة الجدول
+        function printTable() {
+            const originalContent = document.body.innerHTML;
+            const tableContent = document.querySelector('#data-table').outerHTML;
+            document.body.innerHTML = tableContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+            location.reload(); // إعادة تحميل الصفحة بعد الطباعة
+        }
+    </script>
+
+</body>
+</html>
